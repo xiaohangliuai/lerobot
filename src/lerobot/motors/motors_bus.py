@@ -682,7 +682,9 @@ class SerialMotorsBus(MotorsBusBase):
         self._set_torque(motors, True, num_retry)
 
     @contextmanager
-    def torque_disabled(self, motors: NameOrID | Sequence[NameOrID] | None = None) -> Iterator[None]:
+    def torque_disabled(
+        self, motors: NameOrID | Sequence[NameOrID] | None = None, *, num_retry: int = 0
+    ) -> Iterator[None]:
         """Disable the torque of the selected motors for the duration of a `with` block.
 
         The torque is enabled again on exit, even when the block raises, which suits configuring
@@ -691,6 +693,8 @@ class SerialMotorsBus(MotorsBusBase):
         Args:
             motors (`str | int | Sequence[str | int]`, *optional*):
                 Motors to free, by name or id. `None` selects every motor.
+            num_retry (`int`, *optional*, defaults to `0`):
+                Additional attempts per motor when disabling or enabling torque fails.
 
         Example:
             ```python
@@ -698,11 +702,11 @@ class SerialMotorsBus(MotorsBusBase):
             ...     bus.set_operating_mode("position")
             ```
         """
-        self.disable_torque(motors)
+        self.disable_torque(motors, num_retry=num_retry)
         try:
             yield
         finally:
-            self.enable_torque(motors)
+            self.enable_torque(motors, num_retry=num_retry)
 
     @check_if_not_connected
     def set_baudrate(self, baudrate: int) -> None:

@@ -143,7 +143,8 @@ class SOFollower(Robot):
         print("Calibration saved to", self.calibration_fpath)
 
     def configure(self) -> None:
-        with self.bus.torque_disabled():
+        # A dropped torque acknowledgement should not abort startup; persistent failures still raise.
+        with self.bus.torque_disabled(num_retry=2):
             self.bus.configure_motors()
             for motor in self.bus.motors:
                 self.bus.set_operating_mode("position", motor)
